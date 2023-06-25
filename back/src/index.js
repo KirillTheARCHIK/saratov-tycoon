@@ -1,4 +1,5 @@
 require("dotenv").config();
+const cors = require('cors');
 
 //microservices
 require("./auth/auth");
@@ -15,6 +16,7 @@ const app = new Gateway({
     url: process.env.RABBIT_URL,
   },
 });
+app.use(cors());
 
 applyMicroservices(app, microserviceNames, [authEndpoints, propertyEndpoints]);
 
