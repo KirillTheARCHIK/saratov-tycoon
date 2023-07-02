@@ -10,6 +10,7 @@ import {
 } from "react-leaflet";
 import { Facility, getFacilityBounds } from "../classes/Facility";
 import { FacilityBounds } from "../components/map/FacilityBounds";
+import { FacilityPopup } from "../components/map/MyPopup";
 import {
   FacilityContext,
   IFacilityContextDefaultValues,
@@ -17,7 +18,7 @@ import {
 import { http } from "../utils/http";
 
 const MapEventHandler = () => {
-  const { setSelectedFacility} = useContext(FacilityContext);
+  const { setSelectedFacility } = useContext(FacilityContext);
 
   const map = useMapEvents({
     click(e) {
@@ -41,7 +42,6 @@ export const MapPage = (props: {}) => {
   const [selectedFacility, setSelectedFacility] = useState<Facility>();
 
   console.log(selectedFacility);
-  
 
   return (
     <FacilityContext.Provider
@@ -76,7 +76,18 @@ export const MapPage = (props: {}) => {
         >
           <MapEventHandler />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {selectedFacility ? <FacilityBounds facility={selectedFacility} isSelected={true} /> : null}
+          {selectedFacility ? (
+            <FacilityBounds facility={selectedFacility} isSelected={true} />
+          ) : null}
+          {selectedFacility ? (
+            <FacilityPopup
+              position={{
+                lat: selectedFacility.mapInfo.lat,
+                lng: selectedFacility.mapInfo.lon,
+              }}
+              facility={selectedFacility}
+            />
+          ) : null}
         </MapContainer>
       </div>
     </FacilityContext.Provider>

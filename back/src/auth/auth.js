@@ -1,5 +1,6 @@
 const MicroMQ = require("micromq");
 const { applyEndpoints } = require("../microservices");
+const crypto = require("crypto-js");
 const { MongoClient, ObjectId } = require("mongodb");
 const client = new MongoClient(process.env.DB_URL);
 const db = client.db("Saratov-Tycoon-Auth");
@@ -20,12 +21,45 @@ const authEndpoints = [
 
       const usersTable = db.collection("users");
       const user = await usersTable.findOne(
-        id ? new ObjectId(id) : { login, password }
+        id
+          ? new ObjectId(id)
+          : {
+              login,
+            }
       );
-      if (user) {
+      if (
+        user &&
+        (id || password == crypto.AES.decrypt(user.password, "12345").toString(crypto.enc.Utf8) || password == user.password)
+      ) {
         res.json(user);
       } else {
-        throw new Error("No found user");
+        throw new Error("Неправильный логин или пароль");
+      }
+    },
+  },
+  {
+    method: "post",
+    paths: ["/register"],
+    handler: async (req, res, next) => {
+      const { login, password } = req.body;
+
+      const usersTable = db.collection("users");
+      const foundUser = await usersTable.findOne({ login });
+      if (foundUser) {
+        throw new Error("Пользователь с таким логином уже существует");
+      } else {
+        if (!login || !password) {
+          throw new Error("Нет логина или пароля");
+        }
+        const newUser = await usersTable.insertOne({
+          login,
+          password: crypto.AES.encrypt(password, "12345").toString(),
+        });
+        res.json({
+          login,
+          password,
+          _id: newUser.insertedId,
+        });
       }
     },
   },
