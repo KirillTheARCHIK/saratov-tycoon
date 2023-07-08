@@ -42,6 +42,8 @@ export const MapPage = (props: {}) => {
   const [selectedFacility, setSelectedFacility] = useState<Facility>();
 
   console.log(selectedFacility);
+  
+  const headerHeight = document.getElementsByTagName('header')[0]?.clientHeight;
 
   return (
     <FacilityContext.Provider
@@ -56,8 +58,8 @@ export const MapPage = (props: {}) => {
     >
       <div
         style={{
-          width: "100vw",
-          height: "100vh",
+          width: "cals( 100vw - 1px )",
+          height: `calc( 100vh - ${headerHeight ?? 0}px)`,
         }}
       >
         <MapContainer

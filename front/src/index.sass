@@ -1,21 +1,29 @@
-$color-primary: #324AB2
-$color-onPrimary: #fff
-$color-background: #fff
+:root
+  --color-primary: #324AB2
+  --color-onPrimary: #fff
+  --color-background: #fff
 
-$color-font: #000
+  --color-font: #000
 
 body
   margin: 0
   padding: 0
 
 p, h1, h2, h3, a
-  color: $color-font
+  color: var(--color-font)
 
 button
-  background-color: $color-primary
-  color: $color-onPrimary
+  background-color: var(--color-primary)
+  color: var(--color-onPrimary)
   border-radius: 5px
-  padding: 5px 20px 
+  padding: 5px 20px
+
+header
+  background-color: var(--color-primary)
+  h3
+    color: var(--color-onPrimary)
+    font-size: 30px
+    margin: 0
 
 .leaflet-control-attribution
   display: none

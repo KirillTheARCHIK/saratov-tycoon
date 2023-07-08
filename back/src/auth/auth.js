@@ -2,6 +2,7 @@ const MicroMQ = require("micromq");
 const { applyEndpoints } = require("../microservices");
 const crypto = require("crypto-js");
 const { MongoClient, ObjectId } = require("mongodb");
+const { START_MONEY } = require("../economy");
 const client = new MongoClient(process.env.DB_URL);
 const db = client.db("Saratov-Tycoon-Auth");
 
@@ -54,6 +55,7 @@ const authEndpoints = [
         const newUser = await usersTable.insertOne({
           login,
           password: crypto.AES.encrypt(password, "12345").toString(),
+          money: START_MONEY,
         });
         res.json({
           login,

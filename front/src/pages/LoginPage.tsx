@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { User } from "../classes/User";
 import { AuthContext } from "../context/AuthContext";
 import { http } from "../utils/http";
 
@@ -21,7 +22,7 @@ export const LoginPage = (props: {}) => {
       .post("/login", { login, password })
       .then((res) => {
         saveCookie(res.data._id);
-        setUser!(res.data);
+        setUser!(res.data as User);
         navigate('/');
       })
       .catch((err) => {
@@ -34,7 +35,7 @@ export const LoginPage = (props: {}) => {
       .post("/register", { login, password })
       .then((res) => {
         saveCookie(res.data._id);
-        setUser!(res.data);
+        setUser!(res.data as User);
         navigate('/');
       })
       .catch((err) => {

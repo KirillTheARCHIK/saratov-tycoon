@@ -1,24 +1,28 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import { User } from "./classes/User";
+import { Header } from "./components/layout/Header";
 import { AuthContext, IAuthContextDefaultValues } from "./context/AuthContext";
 import { LoginPage } from "./pages/LoginPage";
 import { MapPage } from "./pages/MapPage";
 import { http } from "./utils/http";
 
 function App() {
-  const [user, setUser] = useState();
+  const [user, setUser] = useState<User>();
 
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <MapPage />,
+      element: <div>
+        <Header />
+        <Outlet />
+      </div>,
       children: [
-        // {
-        //   path: "team",
-        //   element: <Team />,
-        //   loader: teamLoader,
-        // },
+        {
+          path: "/",
+          element: <MapPage />,
+        },
       ],
     },
     {
@@ -32,14 +36,16 @@ function App() {
       http
         .post("/login", { id: localStorage.getItem("userId") })
         .then((res) => {
-          setUser!(res.data);
+          setUser!(res.data as User);
         })
         .catch((err) => {
-          console.error(err?.response?.data?.message);
           router.navigate("/login");
         });
     }
   }, [user]);
+
+  console.log(user);
+  
 
   return (
     <AuthContext.Provider value={{ user, setUser }}>
