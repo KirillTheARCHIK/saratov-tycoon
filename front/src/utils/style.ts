@@ -1,0 +1,4 @@
+export const SELECTED_FACILITY_COLOR = "#ff0000";
+export const RESIDENTAL_FACILITY_COLOR = "#24DA24";
+export const COMMERCIAL_FACILITY_COLOR = "#0000ff";
+export const INDUSTRY_FACILITY_COLOR = "#FDA500";

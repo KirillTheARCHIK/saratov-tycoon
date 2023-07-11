@@ -17,6 +17,13 @@ button
   color: var(--color-onPrimary)
   border-radius: 5px
   padding: 5px 20px
+  cursor: pointer
+  &.onPrimary
+    background-color: var(--color-onPrimary)
+    color: var(--color-primary)
+  &.icon-button
+    padding: 5px
+
 
 header
   background-color: var(--color-primary)
@@ -27,6 +34,8 @@ header
 
 .leaflet-control-attribution
   display: none
+.leaflet-fade-anim .leaflet-popup
+  transition: none
 
 .f-r
   display: flex

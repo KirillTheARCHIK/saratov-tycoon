@@ -11,6 +11,7 @@ import {
 import { Facility, getFacilityBounds } from "../classes/Facility";
 import { FacilityBounds } from "../components/map/FacilityBounds";
 import { FacilityPopup } from "../components/map/MyPopup";
+import { AuthContext } from "../context/AuthContext";
 import {
   FacilityContext,
   IFacilityContextDefaultValues,
@@ -24,27 +25,43 @@ const MapEventHandler = () => {
     click(e) {
       console.log(e.latlng);
 
-      http.post("/facilityInfo", { coords: e.latlng }).then((response) => {
-        const res = response.data;
-        const facility = res as Facility;
-        setSelectedFacility!(facility);
-        // console.log(facility);
-      });
+      http
+        .post("/facilityInfo", { coords: e.latlng })
+        .then((response) => {
+          const res = response.data;
+
+          const facility = res as Facility;
+          setSelectedFacility!(facility);
+          // console.log(facility);
+        })
+        .catch((e) => {});
     },
   });
   return <></>;
 };
 
 export const MapPage = (props: {}) => {
+  const { user } = React.useContext(AuthContext);
+
   const [facilities, setFacilities] = useState(
     IFacilityContextDefaultValues.facilities.list
   );
   const [selectedFacility, setSelectedFacility] = useState<Facility>();
 
-  console.log(selectedFacility);
-  
-  const headerHeight = document.getElementsByTagName('header')[0]?.clientHeight;
+  function refreshFacilities() {
+    http.get(`/facilities`).then((res) => {
+      setFacilities(res.data);
+    });
+  }
 
+  useEffect(() => {
+    refreshFacilities();
+    setInterval(() => {
+      refreshFacilities();
+    }, 10000);
+  }, []);
+
+  const headerHeight = document.getElementsByTagName("header")[0]?.clientHeight;
   return (
     <FacilityContext.Provider
       value={{
@@ -58,7 +75,7 @@ export const MapPage = (props: {}) => {
     >
       <div
         style={{
-          width: "cals( 100vw - 1px )",
+          // width: "calc( 100vw - 1px )",
           height: `calc( 100vh - ${headerHeight ?? 0}px)`,
         }}
       >
@@ -78,6 +95,14 @@ export const MapPage = (props: {}) => {
         >
           <MapEventHandler />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {facilities.map((facility) => {
+            return (
+              <FacilityBounds
+                facility={facility}
+                isYours={user?._id == facility.userId}
+              />
+            );
+          })}
           {selectedFacility ? (
             <FacilityBounds facility={selectedFacility} isSelected={true} />
           ) : null}

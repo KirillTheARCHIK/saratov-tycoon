@@ -1,0 +1,10 @@
+const axios = require("axios");
+
+const axiosInstance = axios.create({
+  // baseURL: 'http://31.129.97.124:1000',
+  baseURL: "http://localhost:1000",
+});
+
+module.exports = {
+  http: axiosInstance,
+};
