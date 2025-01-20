@@ -1,17 +1,9 @@
-const MicroMQ = require("micromq");
 const { applyEndpoints } = require("../microservices");
 const crypto = require("crypto-js");
 const { MongoClient, ObjectId } = require("mongodb");
 const Economy = require("../economy");
 const client = new MongoClient(process.env.DB_URL);
 const db = client.db("Saratov-Tycoon-Auth");
-
-const app = new MicroMQ({
-  name: "auth",
-  rabbit: {
-    url: process.env.RABBIT_URL,
-  },
-});
 
 const authEndpoints = [
   {
@@ -128,9 +120,5 @@ const authEndpoints = [
     },
   },
 ];
-
-applyEndpoints(authEndpoints, app);
-
-app.start();
 
 module.exports = authEndpoints;

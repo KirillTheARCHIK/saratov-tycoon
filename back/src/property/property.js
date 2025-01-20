@@ -1,18 +1,7 @@
-const MicroMQ = require("micromq");
-const { applyEndpoints } = require("../microservices");
 const { MongoClient, ObjectId } = require("mongodb");
-const { default: axios } = require("axios");
-const { http } = require("../utils/http");
 const Economy = require("../economy");
 const client = new MongoClient(process.env.DB_URL);
 const db = client.db("Saratov-Tycoon-Property");
-
-const app = new MicroMQ({
-  name: "property",
-  rabbit: {
-    url: process.env.RABBIT_URL,
-  },
-});
 
 const propertyEndpoints = [
   {
@@ -32,11 +21,9 @@ const propertyEndpoints = [
         facility = await facilitiesTable.findOne(new ObjectId(facilityId));
         res.json(facility);
       } else {
-        const mapInfo = await axios
-          .get(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&zoom=18&addressdetails=1`
-          )
-          .then((value) => value.data);
+        const mapInfo = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&zoom=18&addressdetails=1`
+        ).then((value) => value.json());
         facility = await facilitiesTable.findOne({
           "mapInfo.osm_id": mapInfo.osm_id,
         });
@@ -86,6 +73,7 @@ const propertyEndpoints = [
     method: "get",
     paths: ["/facilities/:userId"],
     handler: async (req, res, next) => {
+      console.log(req.params);
       const { userId } = req.params;
 
       const facilitiesTable = db.collection("facilities");
@@ -111,19 +99,26 @@ const propertyEndpoints = [
       if (!newFacility.userId) {
         throw new Error("Не передан номер владельца 'userId'");
       }
-      const user = (await http.get(`/user/${newFacility.userId}`)).data;
+      const user = await fetch(
+        `http://localhost:1000/user/${newFacility.userId}`
+      ).then((res) => res.json());
       if (!user) {
         throw new Error("No found user");
       }
       // console.log(user);
 
-      await http
-        .post(`/user/${newFacility.userId}/money`, {
+      await fetch(`http://localhost:1000/user/${newFacility.userId}/money`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+        },
+        body: JSON.stringify({
           money: -newFacility.cost,
-        })
-        .catch((e) => {
-          throw new Error(e.response.data.message);
-        });
+        }),
+      }).catch((e) => {
+        console.error(e);
+        throw new Error(e);
+      });
 
       const result = await facilitiesTable.insertOne(newFacility);
       res.json({
@@ -135,13 +130,11 @@ const propertyEndpoints = [
   },
 ];
 
-applyEndpoints(propertyEndpoints, app);
-
-app.start();
-
 const refreshInterval = 10; //Интервал в секундах
 async function refresh() {
-  const users = (await http.get("/users")).data;
+  const users = await fetch("http://localhost:1000/users").then((res) =>
+    res.json()
+  );
   const facilitiesTable = db.collection("facilities");
   for (const user of users) {
     const facilities = await facilitiesTable
@@ -156,7 +149,13 @@ async function refresh() {
           (60 * 60 * 24);
         sum += intervalProfit;
       }
-      await http.post(`/user/${user._id}/money`, { money: sum });
+      await fetch(`http://localhost:1000/user/${user._id}/money`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+        },
+        body: JSON.stringify({ money: sum }),
+      });
     }
   }
 }

@@ -4,6 +4,7 @@ module.exports = {
       microserviceApp[endpoint.method.toLowerCase()](
         endpoint.paths,
         async (req, res, next) => {
+          console.log(req.route.path[0]);
           try {
             return await endpoint.handler(req, res, next);
           } catch (e) {

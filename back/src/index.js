@@ -1,23 +1,20 @@
 require("dotenv").config();
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 
 //microservices
 require("./auth/auth");
 
-const Gateway = require("micromq/gateway");
 const authEndpoints = require("./auth/auth");
-const { applyMicroservices } = require("./microservices");
+const { applyEndpoints } = require("./microservices");
 const propertyEndpoints = require("./property/property");
 
-const microserviceNames = ["auth", "property"];
-const app = new Gateway({
-  microservices: microserviceNames,
-  rabbit: {
-    url: process.env.RABBIT_URL,
-  },
-});
+const app = express();
 app.use(cors());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-applyMicroservices(app, microserviceNames, [authEndpoints, propertyEndpoints]);
+applyEndpoints(authEndpoints, app);
+applyEndpoints(propertyEndpoints, app);
 
 app.listen(process.env.PORT);
